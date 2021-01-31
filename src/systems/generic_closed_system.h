@@ -4,9 +4,12 @@
 #include <systems/generic_ports.h>
 #include <sydevs/systems/composite_node.h>
 #include <systems/generic_atomic_node.h>
+#include <systems/generic_own_node.h>
 
 #include <generics/lua.h>
 #include <generics/simulation_config.h>
+
+#include <registerer/registerer.h>
 
 #include <utility>
 
@@ -23,7 +26,7 @@ namespace sydevs::systems {
         ~generic_closed_system() override = default;
 
         // Components
-        std::map<std::string, std::shared_ptr<system_node>> components;
+        std::map<std::string, std::unique_ptr<generic_ports>> components;
     private:
         void create_from_config(const std::string &node_name, const node_context &external_context);
 
@@ -69,17 +72,19 @@ namespace sydevs::systems {
         for(auto& [component_name, node_config] : config.inner_nodes()) {
             switch (node_config.node_type()) {
                 case config_base::NodeTypes::AtomicNode:
-                    components[component_name] = std::shared_ptr<system_node>(new generic_atomic_node(component_name, internal_context(), node_config));
+                    components[component_name] = std::unique_ptr<generic_ports>(new generic_atomic_node(component_name, internal_context(), node_config));
                     break;
                 case config_base::NodeTypes::CompositeNode:
-                    components[component_name] = std::shared_ptr<system_node>(new generic_closed_system(component_name, internal_context(), node_config));
+                    components[component_name] = std::unique_ptr<generic_ports>(new generic_closed_system(component_name, internal_context(), node_config));
+                    break;
+                case config_base::NodeTypes::OwnNode:
+                    components[component_name] = factory::Registry<generic_own_node, const std::string&, const node_context&, sydevs::generics::node_config>::New(node_config.user_class(), component_name, internal_context(), node_config);
                     break;
                 case config_base::NodeTypes::FunctionNode:
                 case config_base::NodeTypes::ParameterNode:
                 case config_base::NodeTypes::CollectionNode:
                 case config_base::NodeTypes::Simulation:
                 case config_base::NodeTypes::RealTimeSimulation:
-                case config_base::NodeTypes::OwnNode:
                 case config_base::NodeTypes::None:
                     break;
             }
@@ -107,12 +112,12 @@ namespace sydevs::systems {
                 switch (to_node.port(to_port_name).mode()) {
                     case data_mode::flow:
                         inward_link(flow_input_port(from_port_name),
-                                    dynamic_cast<sydevs::systems::generic_ports &>(*components[to_node_name]).flow_input_port(
+                                    components[to_node_name]->flow_input_port(
                                             to_port_name));
                         break;
                     case data_mode::message:
                         inward_link(message_input_port(from_port_name),
-                                    dynamic_cast<sydevs::systems::generic_ports &>(*components[to_node_name]).message_input_port(
+                                    components[to_node_name]->message_input_port(
                                             to_port_name));
                         break;
                 }
@@ -123,12 +128,12 @@ namespace sydevs::systems {
                 switch (from_node.port(from_node_name).mode()) {
                     case data_mode::flow:
                         outward_link(
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[from_node_name]).flow_output_port(
+                                components[from_node_name]->flow_output_port(
                                         from_port_name), flow_output_port(to_port_name));
                         break;
                     case data_mode::message:
                         outward_link(
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[from_node_name]).message_output_port(
+                                components[from_node_name]->message_output_port(
                                         from_port_name), message_output_port(to_port_name));
                         break;
                 }
@@ -142,16 +147,16 @@ namespace sydevs::systems {
                 switch (to_node.port(to_port_name).mode()) {
                     case data_mode::flow:
                         inner_link(
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[from_node_name]).flow_output_port(
+                                components[from_node_name]->flow_output_port(
                                         from_port_name),
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[to_node_name]).flow_input_port(
+                                components[to_node_name]->flow_input_port(
                                         to_port_name));
                         break;
                     case data_mode::message:
                         inner_link(
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[from_node_name]).message_output_port(
+                                components[from_node_name]->message_output_port(
                                         from_port_name),
-                                dynamic_cast<sydevs::systems::generic_ports &>(*components[to_node_name]).message_input_port(
+                                components[to_node_name]->message_input_port(
                                         to_port_name));
                         break;
                 }

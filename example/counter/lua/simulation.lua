@@ -13,7 +13,7 @@ end
 
 function macro_planned_event(elapsed_dt)
     print("PING")
-    counter = counter + elapsed_dt:to_int()
+    counter = counter + elapsed_dt:to_number()
     print(counter)
     return duration.new(1)
 end

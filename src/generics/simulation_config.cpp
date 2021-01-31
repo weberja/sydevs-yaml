@@ -128,6 +128,15 @@ namespace sydevs::generics {
         return ports().at(port_name);
     }
 
+    std::string node_config::user_class() {
+        return config["class"].as<std::string>();
+    }
+
+    template<typename ReturnType>
+    ReturnType node_config::get_config(const string &key) {
+        return config[key].as<ReturnType>();
+    }
+
     port_config::port_config(const YAML::Node& port_config) : config_base(port_config, "") {
     }
 

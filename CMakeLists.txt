@@ -36,6 +36,14 @@ target_compile_options(yaml-cpp PUBLIC -Wno-shadow)
 
 # ------------------------------------------------------------------------------
 #
+#   Registerer
+#
+# ------------------------------------------------------------------------------
+set(REG_DIR external/registerer)
+file(GLOB REG_HDRS "${REG_DIR}/*.h")
+
+# ------------------------------------------------------------------------------
+#
 #   Lua
 #
 # ------------------------------------------------------------------------------
@@ -90,8 +98,8 @@ set(GENERICS_DIR ${CODE_DIR}/generics)
 aux_source_directory(${GENERICS_DIR} GENERICS_SRCS)
 file(GLOB GENERICS_HDRS "${GENERICS_DIR}/*.h")
 
-add_library(SyDEVS-YAML-static STATIC ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS})
-add_library(SyDEVS-YAML SHARED ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS})
+add_library(SyDEVS-YAML-static STATIC ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
+add_library(SyDEVS-YAML SHARED ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
 target_link_libraries(SyDEVS-YAML-static PUBLIC SyDEVS-static yaml-cpp lua::lib)
 target_link_libraries(SyDEVS-YAML PUBLIC SyDEVS-static yaml-cpp lua::lib)
 
@@ -124,9 +132,11 @@ add_custom_target(CopyGlobalLuaFiles ALL DEPENDS ${lua_files_dest} )
 #
 # ------------------------------------------------------------------------------
 set(EXAMPLE_DIR example)
+include_directories(${EXAMPLE_DIR})
 aux_source_directory(${EXAMPLE_DIR} EXAMPLE_SRCS)
-file(GLOB EXAMPLE_HDRS "${EXAMPLE_DIR}/*.h")
-add_executable(counter example/main.cpp ${EXAMPLE_SRCS} ${EXAMPLE_HDRS})
+aux_source_directory(${EXAMPLE_DIR}/nodes/ EXAMPLE_NODES_SRCS)
+file(GLOB EXAMPLE_HDRS "${EXAMPLE_DIR}/*/*.h")
+add_executable(counter example/main.cpp ${EXAMPLE_SRCS} ${EXAMPLE_NODES_SRCS} ${EXAMPLE_HDRS})
 target_link_libraries(counter PRIVATE SyDEVS-YAML-static)
 add_dependencies(counter CopyExampleSimulation)
 add_dependencies(counter CopyGlobalLuaFiles)

@@ -1,3 +1,5 @@
+#include "nodes/adder_node.h" // To register the node, it need to be included!
+
 #include <generics/run_simulation.h>
 #include <iostream>
 

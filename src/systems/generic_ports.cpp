@@ -3,10 +3,6 @@
 
 namespace sydevs::generics {
 
-    generic_ports::generic_ports(bool no_ports) {
-        this->no_ports = no_ports;
-    }
-
     std::pair<data_mode, data_goal> generic_ports::get_node_type(const std::string &port_name) const {
         return port_types.at(port_name);
     }

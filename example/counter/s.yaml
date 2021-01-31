@@ -1,26 +1,10 @@
 name: 'bouncing_ball'
-count_agent: 2
+#count_agent: 2
 lua: 'lua/simulation.lua'
 time_precision: unit
-simulation_main_node: 'main'
-real_time: true
+#simulation_main_node: 'main'
+#real_time: true
 atomic_nodes:
-  - name: 'adder'
-    time_precision: unit
-    lua: 'lua/adder.lua'
-    ports:
-      - port_type: flow
-        direction: input
-        data_type: int
-        name: "starter"
-      - port_type: message
-        direction: input
-        data_type: int
-        name: "adder"
-      - port_type: message
-        direction: output
-        data_type: int
-        name: "result"
   - name: 'counter'
     time_precision: unit
     lua: 'lua/counter.lua'
@@ -58,3 +42,20 @@ composite_nodes:
       - counter.counter > adder.adder
       - adder.result > main.adder
       - counter.counter > main.counter
+own_nodes: # Every self written node lives here
+  - name: 'adder'
+    class: adder_node # Same name as in the REGISTER("adder_node", generic_own_node, const std::string&, const node_context&, node_config);
+    time_precision: unit
+    ports:
+      - port_type: flow
+        direction: input
+        data_type: int
+        name: "starter"
+      - port_type: message
+        direction: input
+        data_type: int
+        name: "adder"
+      - port_type: message
+        direction: output
+        data_type: int
+        name: "result"
