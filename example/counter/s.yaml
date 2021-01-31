@@ -1,0 +1,60 @@
+name: 'bouncing_ball'
+count_agent: 2
+lua: 'lua/simulation.lua'
+time_precision: unit
+simulation_main_node: 'main'
+real_time: true
+atomic_nodes:
+  - name: 'adder'
+    time_precision: unit
+    lua: 'lua/adder.lua'
+    ports:
+      - port_type: flow
+        direction: input
+        data_type: int
+        name: "starter"
+      - port_type: message
+        direction: input
+        data_type: int
+        name: "adder"
+      - port_type: message
+        direction: output
+        data_type: int
+        name: "result"
+  - name: 'counter'
+    time_precision: unit
+    lua: 'lua/counter.lua'
+    ports:
+      - port_type: flow
+        direction: input
+        data_type: int
+        name: 'starter'
+      - port_type: message
+        direction: output
+        data_type: int
+        name: 'counter'
+composite_nodes:
+  - name: 'main'
+    time_precision: unit
+    nodes:
+      - adder
+      - counter
+    ports:
+      - port_type: flow
+        direction: input
+        data_type: int
+        name: 'init'
+      - port_type: message
+        direction: output
+        data_type: int
+        name: 'adder'
+      - port_type: message
+        direction: output
+        data_type: int
+        name: 'counter'
+    connections:
+      - main.init > counter.starter
+      - main.init > adder.starter
+      - counter.counter > adder.adder
+      - adder.result > main.adder
+      - counter.counter > main.counter

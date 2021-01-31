@@ -1,0 +1,9 @@
+[submodule "external/sydevs"]
+	path = external/sydevs
+	url = git@github.com:Autodesk/sydevs.git
+[submodule "external/yaml-cpp"]
+	path = external/yaml-cpp
+	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "external/lua-cmake"]
+	path = external/lua-cmake
+	url = git@github.com:weberja/lua-cmake.git

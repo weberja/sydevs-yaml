@@ -1,0 +1,19 @@
+scales = {
+    yocto = scale.new(-8),
+    zepto = scale.new(-7),
+    atto = scale.new(-6),
+    femto = scale.new(-5),
+    pico = scale.new(-4),
+    nano = scale.new(-3),
+    micro = scale.new(-2),
+    milli = scale.new(-1),
+    unit = scale.new(0),
+    kilo = scale.new(1),
+    mega = scale.new(2),
+    giga = scale.new(3),
+    tera = scale.new(4),
+    peta = scale.new(5),
+    exa = scale.new(6),
+    zetta = scale.new(7),
+    yotta = scale.new(8)
+}
