@@ -9,9 +9,6 @@ namespace sydevs::generics {
 
     void generic_ports::add_port(const std::string &port_name, const node_interface &interface, data_mode mode,
                                  data_goal goal) {
-
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "can't be added because the Node is portless!");
-
         switch (mode) {
             case data_mode::flow:
                 switch (goal) {
@@ -42,8 +39,6 @@ namespace sydevs::generics {
 
     void generic_ports::set_port(const std::string &port_name, const std::any& value) {
 
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "can't be set with a value because the Node is portless!");
-
         data_mode mode;
         data_goal goal;
         std::tie(mode, goal) = get_node_type(port_name);
@@ -62,31 +57,25 @@ namespace sydevs::generics {
 
     port<flow, input, std::shared_ptr<std::any>>& generic_ports::flow_input_port(const std::string& port_name) const
     {
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "doesn't exist because the Node is portless!");
         return const_cast<port<flow, input, std::shared_ptr<std::any>>&>(flow_input_ports.at(port_name));
     }
 
     port<flow, output, std::shared_ptr<std::any>>& generic_ports::flow_output_port(const std::string& port_name) const
     {
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "doesn't exist because the Node is portless!");
         return const_cast<port<flow, output, std::shared_ptr<std::any>>&>(flow_output_ports.at(port_name));
     }
 
     port<message, input, std::shared_ptr<std::any>>& generic_ports::message_input_port(const std::string& port_name) const
     {
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "doesn't exist because the Node is portless!");
         return const_cast<port<message, input, std::shared_ptr<std::any>>&>(message_input_ports.at(port_name));
     }
 
     port<message, output, std::shared_ptr<std::any>>& generic_ports::message_output_port(const std::string& port_name) const
     {
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "doesn't exist because the Node is portless!");
         return const_cast<port<message, output, std::shared_ptr<std::any>>&>(message_output_ports.at(port_name));
     }
 
     bool generic_ports::port_received(const std::string &port_name) {
-
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "can't be set with a value because the Node is portless!");
 
         data_mode mode;
         data_goal goal;
@@ -100,7 +89,6 @@ namespace sydevs::generics {
 
     template<typename ReturnType>
     ReturnType generic_ports::get_port(const std::string &port_name) {
-        if(no_ports) throw std::runtime_error("The Port " + port_name + "can't have a value because the Node is portless!");
 
         data_mode mode;
         data_goal goal;
@@ -139,10 +127,6 @@ namespace sydevs::generics {
 
     bool generic_ports::get_bool_port(const std::string &port_name) {
         return get_port<bool>(port_name);
-    }
-
-    bool generic_ports::portless() const {
-        return no_ports;
     }
 }
 
