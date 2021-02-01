@@ -327,7 +327,7 @@ Currently not implemented
 Currently LUA is used a truly generic simulation. If C++ and Clang is used instead functionalities of SyDEVS can be used without a problem. LUA it self was just used to get this project going.
 
 ## Projects used in this project
-* [Lua](https://github.com/lua/lua)
+* [Lua](https://github.com/lua/lua) - [License](https://www.lua.org/license.html)
 * [lua-cmake](https://github.com/weberja/lua-cmake) by [lubgr](https://github.com/lubgr/lua-cmake)
 * [Registerer](https://github.com/Xadeck/Registerer)
 * [sol2 v3](https://github.com/ThePhD/sol2)
