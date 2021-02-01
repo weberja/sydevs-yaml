@@ -115,9 +115,9 @@ real_time: true # currently ignored
 A `generic_atomic_node` with the name `adder` and the lua file `adder.lua` can be described as follow:
 
 ```yaml
-- name: 'adder' # name of the node
+  - name: 'counter' # name of the node
     time_precision: unit
-    lua: 'lua/adder.lua'
+    lua: 'lua/counter.lua'
     ports: # The number of ports is not limited
       - port_type: flow # port_type
         direction: input # port_direction
@@ -142,22 +142,6 @@ time_precision: unit
 simulation_main_node: 'main'
 real_time: true
 atomic_nodes:
-  - name: 'adder'
-    time_precision: unit
-    lua: 'lua/adder.lua'
-    ports:
-      - port_type: flow
-        direction: input
-        data_type: int
-        name: "starter"
-      - port_type: message
-        direction: input
-        data_type: int
-        name: "adder"
-      - port_type: message
-        direction: output
-        data_type: int
-        name: "result"
   - name: 'counter'
     time_precision: unit
     lua: 'lua/counter.lua'
@@ -204,19 +188,14 @@ FROM_NODE_NAME.FROM_PORT_NAME > TO_NODE_NAME.TO_PORT_NAME
 
 For Example `main.init > counter.starter` links the Port `init` of the node `main` with the port `starter` of the node `counter`. SyDEVS-yaml will check if the ports can be connected, otherwise a exception will be thrown, but it will not check if the type of the ports are compatible!
 
-After this the complete yaml file look like this:
+Now we come to the part where we add the node, which will use the class `adder_node`. For this, we add a new node under the key `own_node`. The description of the node is basically the same, only the key `lua` will be replaced with the key `class`. The value of the key `class` in the `.yaml` is the same
+as the key in the REGISTER() function of the cpp class! Every other thing is the same as the other nodes.
 
 ```yaml
-name: 'bouncing_ball'
-count_agent: 2
-lua: 'lua/simulation.lua'
-time_precision: unit
-simulation_main_node: 'main'
-real_time: true
-atomic_nodes:
-  - name: 'adder'
+ own_nodes: # Every self written node lives here
+  - name: 'adder' # Name of the Node - use this when reference the node in this file
+    class: adder_node # Same name as in the REGISTER("adder_node", generic_own_node, const std::string&, const node_context&, node_config);
     time_precision: unit
-    lua: 'lua/adder.lua'
     ports:
       - port_type: flow
         direction: input
@@ -230,6 +209,18 @@ atomic_nodes:
         direction: output
         data_type: int
         name: "result"
+```
+
+After this the complete yaml file look like this:
+
+```yaml
+name: 'bouncing_ball'
+count_agent: 2
+lua: 'lua/simulation.lua'
+time_precision: unit
+simulation_main_node: 'main'
+real_time: true
+atomic_nodes:
   - name: 'counter'
     time_precision: unit
     lua: 'lua/counter.lua'
