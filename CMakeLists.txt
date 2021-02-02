@@ -2,27 +2,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 cmake_minimum_required(VERSION 3.5)
-project(sydevs-yaml)
+project(sydevs-yaml VERSION 1.0
+                    DESCRIPTION "Describe Simulation with a .yaml"
+                    LANGUAGES CXX)
 
-if(MSVC)
-    add_definitions("/wd4244") # Hide type conversion warnings
-    add_compile_options(/MP)
-    add_compile_options(/std=c++${CMAKE_CXX_STANDARD})
-    string(REGEX REPLACE "/Z[iI7]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7 /bigobj")
-else()
-    set(WARNING_FLAGS "-Wall -Wextra -Wignored-qualifiers -Woverloaded-virtual -Winline -Wno-self-assign-overloaded -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-missing-braces")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS}")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Replace g++ standard library with Clang standard library
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    endif()
-    add_compile_options(-std=c++${CMAKE_CXX_STANDARD})
-endif(MSVC)
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-include_directories(src)
 # ------------------------------------------------------------------------------
 #
 #   Yaml-Cpp
@@ -48,15 +31,14 @@ add_subdirectory(external/lua-cmake)
 
 set(SOL_DIR external/sol)
 file(GLOB SOL_HDRS "${SOL_DIR}/*.hpp")
-include_directories(external/)
-
+#include_directories(external)
 # ------------------------------------------------------------------------------
 #
 #   SyDEVS Library
 #
 # ------------------------------------------------------------------------------
 set(SYDEVS_DIR external/sydevs)
-include_directories(${SYDEVS_DIR}/src)
+#add_subdirectory(external/sydevs)
 
 set(CORE_DIR ${SYDEVS_DIR}/src/sydevs/core)
 file(GLOB CORE_HDRS "${CORE_DIR}/*.h")
@@ -76,8 +58,11 @@ aux_source_directory(${SYSTEMS_DIR} SYSTEMS_SRCS)
 source_group("systems-include" FILES ${SYSTEMS_HDRS})
 source_group("systems-src" FILES ${SYSTEMS_SRCS})
 
-add_library(SyDEVS-static STATIC ${CORE_SRCS} ${TIME_SRCS} ${SYSTEMS_SRCS} ${CORE_HDRS} ${TIME_HDRS} ${SYSTEMS_HDRS})
-add_library(SyDEVS SHARED ${CORE_SRCS} ${TIME_SRCS} ${SYSTEMS_SRCS} ${CORE_HDRS} ${TIME_HDRS} ${SYSTEMS_HDRS})
+add_library(SyDEVS ${CORE_SRCS} ${TIME_SRCS} ${SYSTEMS_SRCS} ${CORE_HDRS} ${TIME_HDRS} ${SYSTEMS_HDRS})
+target_include_directories(SyDEVS PUBLIC ${SYDEVS_DIR}/src)
+
+target_compile_features(SyDEVS PUBLIC cxx_std_11)
+set_target_properties(SyDEVS PROPERTIES CXX_EXTENSIONS OFF)
 # ------------------------------------------------------------------------------
 #
 #   SyDEVS-YAML
@@ -95,10 +80,12 @@ set(GENERICS_DIR ${CODE_DIR}/generics)
 aux_source_directory(${GENERICS_DIR} GENERICS_SRCS)
 file(GLOB GENERICS_HDRS "${GENERICS_DIR}/*.h")
 
-add_library(SyDEVS-YAML-static STATIC ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
-add_library(SyDEVS-YAML SHARED ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
-target_link_libraries(SyDEVS-YAML-static PUBLIC SyDEVS-static yaml-cpp lua::lib)
+add_library(SyDEVS-YAML ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
 target_link_libraries(SyDEVS-YAML PUBLIC SyDEVS yaml-cpp lua::lib)
+target_include_directories(SyDEVS-YAML PUBLIC src/ external/)
+
+target_compile_features(SyDEVS-YAML PUBLIC cxx_std_17)
+set_target_properties(SyDEVS-YAML PROPERTIES CXX_EXTENSIONS OFF)
 
 # ------------------------------------------------------------------------------
 #
@@ -129,11 +116,10 @@ add_custom_target(CopyGlobalLuaFiles ALL DEPENDS ${lua_files_dest} )
 #
 # ------------------------------------------------------------------------------
 set(EXAMPLE_DIR example)
-include_directories(${EXAMPLE_DIR})
 aux_source_directory(${EXAMPLE_DIR} EXAMPLE_SRCS)
 aux_source_directory(${EXAMPLE_DIR}/nodes/ EXAMPLE_NODES_SRCS)
 file(GLOB EXAMPLE_HDRS "${EXAMPLE_DIR}/*/*.h")
 add_executable(counter example/main.cpp ${EXAMPLE_SRCS} ${EXAMPLE_NODES_SRCS} ${EXAMPLE_HDRS})
-target_link_libraries(counter PRIVATE SyDEVS-YAML-static)
-add_dependencies(counter CopyExampleSimulation)
-add_dependencies(counter CopyGlobalLuaFiles)
+target_link_libraries(counter PRIVATE SyDEVS-YAML)
+target_include_directories(counter PRIVATE ${EXAMPLE_DIR})
+add_dependencies(counter CopyExampleSimulation CopyGlobalLuaFiles)
