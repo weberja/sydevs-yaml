@@ -1,6 +1,3 @@
-#set(CMAKE_C_COMPILER clang)
-#set(CMAKE_CXX_COMPILER clang++)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -80,7 +77,7 @@ source_group("systems-include" FILES ${SYSTEMS_HDRS})
 source_group("systems-src" FILES ${SYSTEMS_SRCS})
 
 add_library(SyDEVS-static STATIC ${CORE_SRCS} ${TIME_SRCS} ${SYSTEMS_SRCS} ${CORE_HDRS} ${TIME_HDRS} ${SYSTEMS_HDRS})
-
+add_library(SyDEVS SHARED ${CORE_SRCS} ${TIME_SRCS} ${SYSTEMS_SRCS} ${CORE_HDRS} ${TIME_HDRS} ${SYSTEMS_HDRS})
 # ------------------------------------------------------------------------------
 #
 #   SyDEVS-YAML
@@ -101,7 +98,7 @@ file(GLOB GENERICS_HDRS "${GENERICS_DIR}/*.h")
 add_library(SyDEVS-YAML-static STATIC ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
 add_library(SyDEVS-YAML SHARED ${GENERICS_SYSTEMS_SRCS} ${GENERICS_SRCS} ${GENERICS_SYSTEMS_HDRS} ${GENERICS_HDRS} ${REG_HDRS})
 target_link_libraries(SyDEVS-YAML-static PUBLIC SyDEVS-static yaml-cpp lua::lib)
-target_link_libraries(SyDEVS-YAML PUBLIC SyDEVS-static yaml-cpp lua::lib)
+target_link_libraries(SyDEVS-YAML PUBLIC SyDEVS yaml-cpp lua::lib)
 
 # ------------------------------------------------------------------------------
 #
