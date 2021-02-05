@@ -30,7 +30,6 @@ namespace sydevs::generics {
     }
 
     simulation_config::simulation_config() : config_base(YAML::LoadFile(path), std::filesystem::path(path).parent_path()) {
-        std::cout << path << std::endl;
         load_config();
     }
 
@@ -47,6 +46,37 @@ namespace sydevs::generics {
 
     node_config simulation_config::node(const std::string &node_name) {
         return nodes.at(node_name);
+    }
+
+    std::unordered_map<std::string, std::any> simulation_config::init_ports(){
+        std::unordered_map<std::string, std::any> result{};
+        if(auto temp_config = config["init_ports"]) {
+            for(const auto& it : temp_config) {
+                auto port = it.as<YAML::Node>();
+
+                auto port_name = port["name"].as<std::string>();
+                auto port_type = port["type"].as<std::string>();
+
+                if(not qualified_type(port_type)) {
+                    throw std::logic_error("Cant initialize Port " + port_name + " because the type " + port_type + " is not supported by SyDEVS-yaml");
+                }
+                if(port_type == "int") {
+                    result.try_emplace(port_name, std::any(port["value"].as<int64>()));
+                } else if(port_type == "double" || port_type == "float") {
+                    result.try_emplace(port_name, std::any(port["value"].as<float64>()));
+                } else if(port_type == "bool") {
+                    result.try_emplace(port_name, std::any(port["value"].as<bool>()));
+                } else if(port_type == "string") {
+                    result.try_emplace(port_name, std::any(port["value"].as<std::string>()));
+                } else if(port_type == "duration") {
+                    auto value = port["multiplier"].as<int64>();
+                    auto unit = scales.at(port["time_precision"].as<std::string>());
+                    duration init_value{value, unit};
+                    result.try_emplace(port_name, std::any(init_value));
+                }
+            }
+        }
+        return result;
     }
 
     node_config::node_config(const YAML::Node& node_config, config_base::NodeTypes node_type, std::filesystem::path config_directory, simulation_config* simulation) :

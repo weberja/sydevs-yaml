@@ -101,7 +101,7 @@ namespace sydevs::systems {
             bool to_own_node = own_node_name == to_node_name;
 
             if (from_own_node and to_own_node) {
-                // This shouldn't make sence for messages. flow it could work, but need it to?
+                // This shouldn't make sense for messages. flow it could work, but need it to?
                 // There is no function. So no.
                 //TODO: throw error!
                 break;

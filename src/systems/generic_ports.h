@@ -73,19 +73,7 @@ namespace sydevs::generics {
          * @return Value of the Port
          */
         template<typename ReturnType>
-        ReturnType get_port(const std::string& port_name);
-
-        ///@{
-        /**
-         * Specialised version of the get_port function. Currently it is only used by the lua interpreter
-         * @param port_name Name of the port
-         * @return Value of the port
-         */
-        virtual std::string get_string_port(const std::string& port_name);
-        virtual double get_double_port(const std::string& port_name);
-        virtual duration get_duration_port(const std::string& port_name);
-        virtual bool get_bool_port(const std::string& port_name);
-        ///@}
+        ReturnType get_port_as(const std::string& port_name);
 
     private:
         std::map<std::string, systems::port<flow, input, std::shared_ptr<std::any>>> flow_input_ports;
@@ -95,5 +83,32 @@ namespace sydevs::generics {
 
         std::map<std::string, std::pair<data_mode, data_goal>> port_types;
     };
+
+    // Need to be in the .hm otherwise the link cant find the function pointer for the template specialisation. (in lua.h)
+    template<typename ReturnType>
+    inline ReturnType generic_ports::get_port_as(const std::string &port_name) {
+
+        data_mode mode;
+        data_goal goal;
+        ReturnType return_value;
+        std::tie(mode, goal) = get_node_type(port_name);
+
+        if (goal != data_goal::input) throw std::runtime_error("Port ist kein Eingang!");
+
+        try {
+            switch (mode) {
+                case data_mode::flow:
+                    return_value = std::any_cast<ReturnType>(*flow_input_ports.at(port_name).value());
+                    break;
+                case data_mode::message:
+                    return_value = std::any_cast<ReturnType>(*message_input_ports.at(port_name).value());
+                    break;
+            }
+        } catch (const std::bad_any_cast& e) {
+            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein" + typeid(ReturnType).name() +" zubekommen" );
+        }
+
+        return return_value;
+    }
 }
 #endif //SYDEVS_GENERICS_GENERIC_PORT_H

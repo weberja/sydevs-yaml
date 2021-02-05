@@ -102,18 +102,10 @@ class generic_interactiv_system : public interactive_system<std::string, generic
          */
         void set_port(const std::string& port_name, const std::any& value) override;
 
-        ///@{
-        /**
-         * Read the port of the prototype or agent.
-         * @param port_name Name of the port of the prototype
-         * @return return type is equal to name of the function
-         */
-        std::string get_string_port(const std::string& port_name) override;
-        double get_double_port(const std::string& port_name) override;
-        duration get_duration_port(const std::string& port_name) override;
-        bool get_bool_port(const std::string& port_name) override;
-        ///@}
-        ///@}
+
+
+        template<typename ReturnType>
+        ReturnType get_port_value_as(const std::string& port_name);
     };
 
     inline generic_interactiv_system::generic_interactiv_system(const std::string &node_name,
@@ -130,6 +122,10 @@ class generic_interactiv_system : public interactive_system<std::string, generic
     inline duration generic_interactiv_system::macro_initialization_update(std::any& injection)
     {
         duration dt = interpreter.macro_initialization_event();
+        auto ports_to_init = config.init_ports();
+        for(auto [port_name, value] : ports_to_init) {
+            set_port(port_name, value);
+        }
         try {
             invoke_agent("main");
         } catch(std::logic_error& e) {
@@ -176,78 +172,8 @@ class generic_interactiv_system : public interactive_system<std::string, generic
         }
     }
 
-    inline std::string generic_interactiv_system::get_string_port(const std::string &port_name) {
-        print("string");
-        data_mode mode;
-        data_goal goal;
-        std::string return_value;
-        std::tie(mode, goal) = prototype.get_node_type(port_name);
-
-        if (goal != data_goal::output) throw std::runtime_error("Port "+ port_name +" ist kein Eingang!");
-
-        switch (mode) {
-            case data_mode::flow:
-                return_value = std::any_cast<std::string>(*access(prototype.flow_output_port(port_name)));
-                break;
-            case data_mode::message:
-                return_value = std::any_cast<std::string>(*access(prototype.message_output_port(port_name)));
-                break;
-        }
-
-        return return_value;
-    }
-
-    inline double generic_interactiv_system::get_double_port(const std::string &port_name) {
-        print("double");
-        data_mode mode;
-        data_goal goal;
-        double return_value;
-        std::tie(mode, goal) = prototype.get_node_type(port_name);
-
-        if (goal != data_goal::output) throw std::runtime_error("Port "+ port_name +" ist kein Eingang!");
-        try {
-            switch (mode) {
-                case data_mode::flow:
-                    return_value = std::any_cast<double>(*access(prototype.flow_output_port(port_name)));
-                    break;
-                case data_mode::message:
-                    return_value = std::any_cast<double>(*access(prototype.message_output_port(port_name)));
-                    break;
-            }
-        } catch (const std::bad_any_cast& e) {
-            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein double zubekommen" );
-        }
-
-        return return_value;
-    }
-
-    inline duration generic_interactiv_system::get_duration_port(const std::string &port_name) {
-        print("duration");
-        data_mode mode;
-        data_goal goal;
-        duration return_value;
-        std::tie(mode, goal) = prototype.get_node_type(port_name);
-
-        if (goal != data_goal::output) throw std::runtime_error("Port ist kein Eingang!");
-
-        try {
-            switch (mode) {
-                case data_mode::flow:
-                    return_value = std::any_cast<duration>(*access(prototype.flow_output_port(port_name)));
-                    break;
-                case data_mode::message:
-                    return_value = std::any_cast<duration>(*access(prototype.message_output_port(port_name)));
-                    break;
-            }
-        } catch (const std::bad_any_cast& e) {
-            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein sydevs::duration zubekommen" );
-        }
-
-        return return_value;
-    }
-
-    inline bool generic_interactiv_system::get_bool_port(const std::string &port_name) {
-        print("bool");
+    template<typename ReturnType>
+    inline ReturnType generic_interactiv_system::get_port_value_as(const string &port_name) {
         data_mode mode;
         data_goal goal;
         bool return_value;
@@ -258,14 +184,14 @@ class generic_interactiv_system : public interactive_system<std::string, generic
         try {
             switch (mode) {
                 case data_mode::flow:
-                    return_value = std::any_cast<bool>(*access(prototype.flow_output_port(port_name)));
+                    return_value = std::any_cast<ReturnType>(*access(prototype.flow_output_port(port_name)));
                     break;
                 case data_mode::message:
-                    return_value = std::any_cast<bool>(*access(prototype.message_output_port(port_name)));
+                    return_value = std::any_cast<ReturnType>(*access(prototype.message_output_port(port_name)));
                     break;
             }
         }  catch (const std::bad_any_cast& e) {
-            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein bool zubekommen" );
+            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein " + typeid(ReturnType).name() + " zubekommen" );
         }
 
         return return_value;

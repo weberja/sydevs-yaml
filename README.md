@@ -77,11 +77,38 @@ int main(int argc, const char* argv[])
     return 0;
 }
 ```
+### Datatypes
+In theory SyDEVS-yaml can use any datatype which is avaliable in C++, if __no__ node is involved that use lua. The ports
+of the `generic_closed_system`/`composite_node`, which are used to initialize the inner nodes over the flow ports. The value of
+these Ports can be set with lua or with the `.yaml`.
+
+When data is written or read from a port with in lua or with the help of the `.yaml` file, then only these following datatypes are available:
+
+C++ Datatype | Name in SyDEVS-yaml | Value in `.yaml` | Description
+--- | --- | --- | ---
+`int64` / `int64_t` | `int` | 12 |Integer
+`float64` / `double` | `double` OR `float` | 12.0 OR 12 | Floating point number with double precision
+`std::string`| `string` | "String" OR String |Char array / String
+`bool` | `bool` | true OR false |Boolean (true/false)
+`duration` | `duration` | _See the folowing expanation!_ | SyDEVS Type - see the folowing expanation!
+
+The type `duration` need to be different defind in the `.yaml`. The  value of the key `time_precision` can be the same as the other `time_precision`. For more information look in the API documentation of SyDEVS for the `scale.h`.
+
+```yaml
+...
+init_ports: # Same as 3 seconds 
+  - name: init
+    type: duration
+    multiplier: 3
+    time_precision: unit
+...
+```
+
 ### Describe a simulation with `.yaml`
 #### Bare minimum
 The YAML-file is a little bit bigger so i will divide it in section. All node names must be uniq in the simulation! The port names must be uniq only in the same node.
 
-Before i describe the example. I will show you what is the complete minimum to create a runable simulation:
+Before i describe the example. I will show you what is the complete minimum to create a runnable simulation:
 
 ```yaml
 name: 'bouncing_ball'
@@ -189,7 +216,7 @@ FROM_NODE_NAME.FROM_PORT_NAME > TO_NODE_NAME.TO_PORT_NAME
 For Example `main.init > counter.starter` links the Port `init` of the node `main` with the port `starter` of the node `counter`. SyDEVS-yaml will check if the ports can be connected, otherwise a exception will be thrown, but it will not check if the type of the ports are compatible!
 
 Now we come to the part where we add the node, which will use the class `adder_node`. For this, we add a new node under the key `own_node`. The description of the node is basically the same, only the key `lua` will be replaced with the key `class`. The value of the key `class` in the `.yaml` is the same
-as the key in the REGISTER() function of the cpp class! Every other thing is the same as the other nodes.
+as the key in the REGISTER() function of the cpp class! Every other thing is the same as the other nodes. Where and why the REGISTER function is used? The anwser you can find [here](#the-header). 
 
 ```yaml
  own_nodes: # Every self written node lives here
@@ -259,7 +286,6 @@ composite_nodes:
       - adder.result > main.adder
       - counter.counter > main.counter
 ```
-
 ### Use LUA in the simulation
 SyDEVS-yaml make the following object/things from SyDEVS callebal from lua.
 
@@ -268,6 +294,7 @@ Types:
     * `set_port(PORT_NAME, PORT_VALUE)`
     * `port_received(PORT_NAME)`
     * `get_string_port(PORT_NAME)`
+    * `get_int_port(PORT_NAME)`
     * `get_double_port(PORT_NAME)`
     * `get_duration_port(PORT_NAME)`
     * `get_bool_port(PORT_NAME)`
@@ -312,9 +339,81 @@ scales = {
 
 
 ### Write your own node in C++ and use it
-Currently not implemented
+You cann find a full functional class [here](example/nodes/adder_node.h) and how the `.yaml` file need to be [edit](#example--how-to-use-yaml) to use your own class.
 
-## What can be and Future
+#### The Header
+```c++
+class adder_node : public generic_own_node {
+    REGISTER("adder_node", generic_own_node, const std::string&, const node_context&, node_config);
+
+    public:
+        // Constructor/Destructor:
+        adder_node(const std::string& node_name, const node_context& external_context, node_config config);
+        ~adder_node() override = default;
+
+        // Attributes:
+        scale time_precision() const override;
+
+    protected:
+
+        // Event Handlers:
+        duration initialization_event() override;
+        duration unplanned_event(duration elapsed_dt) override;
+        duration planned_event(duration elapsed_dt) override;
+        void finalization_event(duration elapsed_dt) override;
+    };
+```
+Your node is a derived from `generic_own_node` and is basically a `atomic_node` from SyDEVS with a bit of sprinkle on top. Everything that a `atomic_node` can, your node can also do. Only how the read and write the ports ist different.
+
+So your node inherit from `generic_own_node`:
+```c++
+class adder_node : public generic_own_node {
+    REGISTER("adder_node", generic_own_node, const std::string&, const node_context&, node_config);
+};
+```
+And the first thing to do, is to Register your node at SyDEVS-yaml. You only need to change the first parameter. Change the string to everything you want.
+It just need to be the same as the key `class` in the `.yaml`. 
+
+```yaml
+...
+own_nodes: # Every self written node lives here
+  - name: 'adder' # Name of the Node - use this when reference the node in this file
+    class: adder_node # Same name as in the REGISTER("adder_node", generic_own_node, const std::string&, const node_context&, node_config);
+    time_precision: unit
+...
+```
+The signature of the constructor should not be changed! 
+```c++
+public:
+        // Constructor/Destructor:
+        adder_node(const std::string& node_name, const node_context& external_context, node_config config);
+        ~adder_node() override = default;
+```
+For the following function you can consult the SyDEVS documentation for how you can implement them.
+```c++
+    // Attributes:
+    scale time_precision() const override;
+
+protected:
+
+    // Event Handlers:
+    duration initialization_event() override;
+    duration unplanned_event(duration elapsed_dt) override;
+    duration planned_event(duration elapsed_dt) override;
+    void finalization_event(duration elapsed_dt) override;
+```
+To read or write to a port you need to use the following functions. The `port_name` is the same as in the `.yaml` config of your node.
+```c++
+// Read the port as the type ReturnType
+get_port_as<ReturnType>(port_name);
+// For example
+std::string value = get_port_as<std::string>("input_port1");
+
+// To write a port just use the set_port function. 
+// The value need to be casted to std::any!
+set_port(port_name, value_casted_to_std::any)
+```
+## What can be and the future
 Currently LUA is used a truly generic simulation. If C++ and Clang is used instead functionalities of SyDEVS can be used without a problem. LUA it self was just used to get this project going.
 
 ## Projects used in this project

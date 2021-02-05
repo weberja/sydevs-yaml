@@ -8,10 +8,11 @@ namespace sydevs::generics {
         l.new_usertype<generic_ports>("generic_ports",
                                       "set_port", &generic_ports::set_port,
                                       "port_received", &generic_ports::port_received,
-                                      "get_string_port", &generic_ports::get_string_port,
-                                      "get_double_port", &generic_ports::get_double_port,
-                                      "get_duration_port", &generic_ports::get_duration_port,
-                                      "get_bool_port", &generic_ports::get_bool_port);
+                                      "get_string_port", &generic_ports::get_port_as<std::string>,
+                                      "get_double_port", &generic_ports::get_port_as<float64>,
+                                      "get_int_port", &generic_ports::get_port_as<int64>,
+                                      "get_duration_port", &generic_ports::get_port_as<duration>,
+                                      "get_bool_port", &generic_ports::get_port_as<bool>);
 
         // Make Ports accessible
         l["ports"] = node_ports;
@@ -40,23 +41,6 @@ namespace sydevs::generics {
 
         run_file("lua/log.lua");
         run_file("lua/scale.lua");
-    }
-
-    int lua::exception_handler(lua_State* L, sol::optional<const std::exception&> maybe_exception, sol::string_view description) {
-
-//        std::cout << "An exception occurred in a function, here's what it says ";
-//        if (maybe_exception) {
-//            std::cout << "(straight from the exception): ";
-//            const std::exception& ex = *maybe_exception;
-//            std::cout << ex.what() << std::endl;
-//        }
-//        else {
-//            std::cout << "(from the description parameter): ";
-//            std::cout.write(description.data(), static_cast<std::streamsize>(description.size()));
-//            std::cout << std::endl;
-//        }
-
-        return sol::stack::push(L, description);
     }
 
     void lua::run_file(const std::string& file_paths) {

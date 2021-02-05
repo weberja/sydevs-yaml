@@ -2,7 +2,7 @@ counter = 0
 micro_counter = 0
 
 function macro_initialization_event()
-    ports:set_port("init",any.new(2.0))
+--     ports:set_port("init",any.new(2.0))
     return duration.new(1, scales["unit"])
 end
 

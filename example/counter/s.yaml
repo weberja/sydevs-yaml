@@ -4,6 +4,10 @@ lua: 'lua/simulation.lua'
 time_precision: unit
 #simulation_main_node: 'main'
 #real_time: true
+init_ports:
+  - name: init
+    type: double
+    value: 2.1
 atomic_nodes:
   - name: 'counter'
     time_precision: unit

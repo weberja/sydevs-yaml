@@ -51,7 +51,7 @@ class adder_node : public generic_own_node {
     inline duration adder_node::unplanned_event(duration elapsed_dt)
     {
         print("Hello! UnPlanned_event");
-        if(port_received("adder")) print(get_double_port("adder"));
+        if(port_received("adder")) print(get_port_as<double>("adder"));
         return 0_s;
     }
 

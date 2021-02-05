@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <algorithm>
 
+#include <any>
+
 #include <iostream>
 
 namespace sydevs::generics {
@@ -90,6 +92,26 @@ namespace sydevs::generics {
         };
 
         /**
+         * Vector of all types supported in lua and yaml. The string is the same a named in yaml.
+         * See Data types in the README.md for more infos.
+         */
+        inline static const std::vector<std::string> qualified_types = {
+                "int",
+                "double",
+                "float",
+                "string",
+                "bool",
+                "duration"
+        };
+
+        static bool qualified_type(const std::string& type) {
+            if(std::find(std::begin(qualified_types), std::end(qualified_types), type) != std::end(qualified_types)) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
          * Maps the key, used in the config, to the enum sydevs::systems::data_mode
          */
         inline static const std::unordered_map<std::string, data_mode> string_to_data_mode = {
@@ -161,7 +183,7 @@ namespace sydevs::generics {
         ReturnType get_config(const std::string& key); ///< Search in the config of the node if the key exist and return the value. The value is casted to the ReturnType
     private:
         NodeTypes type;
-        simulation_config* sim;
+        simulation_config* sim{nullptr};
     };
 
     /**
@@ -180,6 +202,12 @@ namespace sydevs::generics {
         simulation_config(); ///< Constructor
 
         node_config node(const std::string& node_name); ///< Return the config of the given node - if it exists
+
+        /**
+         * Returns the value for each port of the node "main"
+         * @return for every port mention in the .yaml under "init_ports" it returns the value to be set
+         */
+        std::unordered_map<std::string, std::any> init_ports();
 
         int64 count_agent();
 

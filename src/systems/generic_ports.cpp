@@ -86,47 +86,5 @@ namespace sydevs::generics {
 
         return message_input_ports.at(port_name).received();
     }
-
-    template<typename ReturnType>
-    ReturnType generic_ports::get_port(const std::string &port_name) {
-
-        data_mode mode;
-        data_goal goal;
-        ReturnType return_value;
-        std::tie(mode, goal) = get_node_type(port_name);
-
-        if (goal != data_goal::input) throw std::runtime_error("Port ist kein Eingang!");
-
-        try {
-            switch (mode) {
-                case data_mode::flow:
-                    return_value = std::any_cast<ReturnType>(*flow_input_ports.at(port_name).value());
-                    break;
-                case data_mode::message:
-                    return_value = std::any_cast<ReturnType>(*message_input_ports.at(port_name).value());
-                    break;
-            }
-        } catch (const std::bad_any_cast& e) {
-            throw std::runtime_error("Datentype des Ports "+ port_name +" ist falsch. Es wurde versucht ein" + typeid(ReturnType).name() +" zubekommen" );
-        }
-
-        return return_value;
-    }
-
-    std::string generic_ports::get_string_port(const std::string &port_name) {
-        return get_port<std::string>(port_name);
-    }
-
-    double generic_ports::get_double_port(const std::string &port_name) {
-        return get_port<double>(port_name);
-    }
-
-    duration generic_ports::get_duration_port(const std::string &port_name) {
-        return get_port<duration>(port_name);
-    }
-
-    bool generic_ports::get_bool_port(const std::string &port_name) {
-        return get_port<bool>(port_name);
-    }
 }
 
