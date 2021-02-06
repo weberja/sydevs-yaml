@@ -6,10 +6,10 @@
 #define SYDEVS_REALTIME_GENERIC_INTERACTIV_SYSTEM_H
 
 #include <sydevs/systems/interactive_system.h>
-#include <systems/generic_closed_system.h>
+#include <sydevs-yaml/systems/generic_closed_system.h>
 
-#include <generics/simulation_config.h>
-#include <generics/lua.h>
+#include <sydevs-yaml/generics/simulation_config.h>
+#include <sydevs-yaml/generics/lua.h>
 
 #include <any>
 

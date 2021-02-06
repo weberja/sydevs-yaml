@@ -3,9 +3,9 @@
 
 #include <sydevs/systems/atomic_node.h>
 
-#include <systems/generic_ports.h>
-#include <generics/lua.h>
-#include <generics/simulation_config.h>
+#include <sydevs-yaml/systems/generic_ports.h>
+#include <sydevs-yaml/generics/lua.h>
+#include <sydevs-yaml/generics/simulation_config.h>
 
 namespace sydevs::systems {
 

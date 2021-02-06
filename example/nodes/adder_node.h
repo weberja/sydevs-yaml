@@ -2,7 +2,7 @@
 #define SYDEVS_YAML_ADDER_NODE_H
 #include <registerer/registerer.h>
 
-#include <systems/generic_own_node.h>
+#include <sydevs-yaml/systems/generic_own_node.h>
 
 #include <utility>
 

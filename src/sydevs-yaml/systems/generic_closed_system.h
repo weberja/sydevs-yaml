@@ -1,13 +1,13 @@
 #ifndef SYDEVS_REALTIME_GENERIC_CLOSED_SYSTEM_H
 #define SYDEVS_REALTIME_GENERIC_CLOSED_SYSTEM_H
 
-#include <systems/generic_ports.h>
+#include <sydevs-yaml/systems/generic_ports.h>
 #include <sydevs/systems/composite_node.h>
-#include <systems/generic_atomic_node.h>
-#include <systems/generic_own_node.h>
+#include <sydevs-yaml/systems/generic_atomic_node.h>
+#include <sydevs-yaml/systems/generic_own_node.h>
 
-#include <generics/lua.h>
-#include <generics/simulation_config.h>
+#include <sydevs-yaml/generics/lua.h>
+#include <sydevs-yaml/generics/simulation_config.h>
 
 #include <registerer/registerer.h>
 

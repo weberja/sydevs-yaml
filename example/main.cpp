@@ -1,6 +1,6 @@
 #include "nodes/adder_node.h" // To register the node, it need to be included!
 
-#include <generics/run_simulation.h>
+#include <sydevs-yaml/generics/run_simulation.h>
 #include <iostream>
 
 using namespace sydevs;

@@ -1,4 +1,4 @@
-#include <generics/run_simulation.h>
+#include <sydevs-yaml/generics/run_simulation.h>
 
 namespace sydevs::generics {
 

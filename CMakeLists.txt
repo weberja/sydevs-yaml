@@ -68,7 +68,7 @@ set_target_properties(SyDEVS PROPERTIES CXX_EXTENSIONS OFF)
 #   SyDEVS-YAML
 #
 # ------------------------------------------------------------------------------
-set(CODE_DIR src)
+set(CODE_DIR src/sydevs-yaml)
 
 # sydevs::systems
 set(GENERICS_SYSTEMS_DIR ${CODE_DIR}/systems)

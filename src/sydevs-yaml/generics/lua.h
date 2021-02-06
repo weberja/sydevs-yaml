@@ -9,7 +9,7 @@
 #include <sydevs/systems/data_goal.h>
 #include <sydevs/systems/data_mode.h>
 
-#include <systems/generic_ports.h>
+#include <sydevs-yaml/systems/generic_ports.h>
 
 #include <iostream>
 #include <any>

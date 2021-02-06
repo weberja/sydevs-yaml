@@ -6,8 +6,8 @@
 #include <sydevs/systems/simulation.h>
 #include <sydevs/core/quantity.h>
 
-#include <systems/generic_interactiv_system.h>
-#include <generics/simulation_config.h>
+#include <sydevs-yaml/systems/generic_interactiv_system.h>
+#include <sydevs-yaml/generics/simulation_config.h>
 
 #include <iostream>
 
